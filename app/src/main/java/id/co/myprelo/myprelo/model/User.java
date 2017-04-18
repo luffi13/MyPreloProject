@@ -66,4 +66,16 @@ public class User {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", email='" + email + '\'' +
+                ", token='" + token + '\'' +
+                ", photoUrl='" + photoUrl + '\'' +
+                '}';
+    }
 }

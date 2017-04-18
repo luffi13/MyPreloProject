@@ -1,5 +1,6 @@
 package id.co.myprelo.myprelo.activity;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,7 +17,9 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 
 import id.co.myprelo.myprelo.R;
+import id.co.myprelo.myprelo.model.User;
 import id.co.myprelo.myprelo.services.ApiController;
+import id.co.myprelo.myprelo.session.SessionManager;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText et_password;
     AutoCompleteTextView et_usernameOrEmail;
     Button btn_login;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,10 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         getView();
+        sessionManager = new SessionManager(getApplicationContext());
+        if (sessionManager.isLoggedIn()){
+            gotoProfileActivity();
+        }
     }
 
     //get view
@@ -85,6 +93,37 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    //get profile data from json
+    private void loadSession(JsonObject _data){
+        User user = new User();
+        user.setToken(_data.get("token").getAsString());
+        user.setName(_data.get("fullname").getAsString());
+        user.setUsername(_data.get("username").getAsString());
+        user.setEmail(_data.get("email").getAsString());
+
+        JsonObject defaultAddress = _data.getAsJsonObject("default_address");
+        user.setAddress(defaultAddress.get("subdistrict_name").getAsString()+", "+
+                defaultAddress.get("region_name").getAsString()+", "+
+                defaultAddress.get("province_name").getAsString()
+        );
+
+        JsonObject profile  = _data.getAsJsonObject("profile");
+        user.setPhotoUrl(profile.get("pict").getAsString());
+
+        sessionManager.setIsLoggedIn(true);
+        sessionManager.setProfileData(user);
+    }
+
+    //go to profile activity
+    private void gotoProfileActivity(){
+        Intent intent = new Intent(this,ProfileActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+    }
+
+    //call auth api
     public void callLoginApi(String username, String password){
         final ApiController apiController = new ApiController();
         HashMap<String, Object> requestData = new HashMap<>();
@@ -98,9 +137,10 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     JsonObject jsonResponse = response.body().getAsJsonObject();
                     JsonObject _data = jsonResponse.getAsJsonObject("_data");
-                    String token = _data.get("token").getAsString();
 
-                    Toast.makeText(LoginActivity.this, "success Login"+token, Toast.LENGTH_SHORT).show();
+                    //load data to session
+                    loadSession(_data);
+                    gotoProfileActivity();
                 }
                 else if (response.code()==400){
                     Converter<ResponseBody, JsonElement> errorConverter =
