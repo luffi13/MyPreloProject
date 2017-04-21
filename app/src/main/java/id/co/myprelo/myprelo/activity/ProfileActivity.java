@@ -1,5 +1,6 @@
 package id.co.myprelo.myprelo.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -102,6 +103,10 @@ public class ProfileActivity extends AppCompatActivity {
     private void retrieveListLoveData(){
         ApiController apiController = new ApiController();
 
+        final ProgressDialog progressDialog  = new ProgressDialog(this);
+        progressDialog.setTitle("retrieving data");
+        progressDialog.setMessage("please wait....");
+        progressDialog.show();
         Log.d("token", "retrieveListLoveData: "+currentUser.getToken());
         Call<JsonElement> callLoginService = apiController.getServicesRequest().getLoveList("Token "+currentUser.getToken());
         callLoginService.enqueue(new Callback<JsonElement>() {
@@ -113,12 +118,14 @@ public class ProfileActivity extends AppCompatActivity {
                     ArrayList<Item> listData = gson.fromJson(jsonResponse.get("_data"),new TypeToken<ArrayList<Item>>(){}.getType());
                     adapter.setListData(listData);
                     adapter.notifyDataSetChanged();
+                    progressDialog.dismiss();
                 }
             }
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
-
+                progressDialog.dismiss();
+                Toast.makeText(ProfileActivity.this, "connection problem", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -159,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "failed Login", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "please check your connection", Toast.LENGTH_SHORT).show();
                 t.printStackTrace();
             }
         });
