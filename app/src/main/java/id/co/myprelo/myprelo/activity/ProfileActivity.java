@@ -2,6 +2,7 @@ package id.co.myprelo.myprelo.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,13 +33,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     private SessionManager sessionManager;
     private User currentUser;
     private RecyclerView rv_list;
     private RecyclerListAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
 
     @Override
@@ -51,6 +53,7 @@ public class ProfileActivity extends AppCompatActivity {
         adapter = new RecyclerListAdapter(null,this);
         layoutManager = new LinearLayoutManager(this);
 
+        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.refreshLayout);
         rv_list = (RecyclerView)findViewById(R.id.rv_list);
         rv_list.setLayoutManager(layoutManager);
         rv_list.setAdapter(adapter);
@@ -59,6 +62,8 @@ public class ProfileActivity extends AppCompatActivity {
         //load profile layout
         loadProfileLayout();
         retrieveListLoveData();
+        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.setRefreshing(true);
     }
 
     private void loadProfileLayout(){
@@ -103,10 +108,6 @@ public class ProfileActivity extends AppCompatActivity {
     private void retrieveListLoveData(){
         ApiController apiController = new ApiController();
 
-        final ProgressDialog progressDialog  = new ProgressDialog(this);
-        progressDialog.setTitle("retrieving data");
-        progressDialog.setMessage("please wait....");
-        progressDialog.show();
         Log.d("token", "retrieveListLoveData: "+currentUser.getToken());
         Call<JsonElement> callLoginService = apiController.getServicesRequest().getLoveList("Token "+currentUser.getToken());
         callLoginService.enqueue(new Callback<JsonElement>() {
@@ -118,15 +119,20 @@ public class ProfileActivity extends AppCompatActivity {
                     ArrayList<Item> listData = gson.fromJson(jsonResponse.get("_data"),new TypeToken<ArrayList<Item>>(){}.getType());
                     adapter.setListData(listData);
                     adapter.notifyDataSetChanged();
-                    progressDialog.dismiss();
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             }
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
-                progressDialog.dismiss();
+                swipeRefreshLayout.setRefreshing(false);
                 Toast.makeText(ProfileActivity.this, "connection problem", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onRefresh() {
+        retrieveListLoveData();
     }
 }
