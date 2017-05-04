@@ -19,6 +19,9 @@ public class Item implements Serializable {
     @SerializedName("display_picts")
     private String[]  display_picts;
 
+    @SerializedName("_id")
+    private String id;
+
 
     public Item() {
     }
@@ -47,6 +50,14 @@ public class Item implements Serializable {
 
     public String[] getDisplay_picts() {
         return display_picts;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setDisplay_picts(String[] display_picts) {

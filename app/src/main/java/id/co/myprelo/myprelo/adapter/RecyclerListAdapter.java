@@ -2,6 +2,7 @@ package id.co.myprelo.myprelo.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.view.LayoutInflater;
@@ -13,7 +14,9 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 
 import id.co.myprelo.myprelo.R;
+import id.co.myprelo.myprelo.activity.DetailItem;
 import id.co.myprelo.myprelo.holder.ItemHolder;
+import id.co.myprelo.myprelo.model.Detail;
 import id.co.myprelo.myprelo.model.Item;
 import id.co.myprelo.myprelo.model.User;
 
@@ -40,10 +43,18 @@ public class RecyclerListAdapter extends RecyclerView.Adapter <ItemHolder>{
 
     @Override
     public void onBindViewHolder(ItemHolder holder, int position) {
-        Item item = listData.get(position);
+        final Item item = listData.get(position);
         holder.tv_name.setText(item.getName());
         holder.tv_price.setText("Rp "+item.getPrice());
         Glide.with(activity).load(item.getDisplay_picts()[0]).into(holder.photo);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity, DetailItem.class);
+                intent.putExtra("id",item.getId());
+                activity.startActivity(intent);
+            }
+        });
     }
 
     @Override
